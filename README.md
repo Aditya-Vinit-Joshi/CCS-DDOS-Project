@@ -144,11 +144,12 @@ pip install pandas numpy matplotlib seaborn scikit-learn xgboost kagglehub scipy
 
 ## Results Summary
 
-| Model                | Accuracy | Notes                                  |
-|---------------------|----------|----------------------------------------|
-| Random Forest        | ~95%     | Performs well without dimensionality reduction |
-| XGBoost              | ~96%     | Highest accuracy, PCA improves speed   |
-| K-Nearest Neighbors  | ~92%     | Sensitive to feature scaling           |
+| Model               | Accuracy |Notes                                           |
+|---------------------|----------|------------------------------------------------|
+| Random Forest       | 98%      | Performs well without dimensionality reduction |
+| XGBoost             | 98.627%  | Highest accuracy, PCA improves speed           |
+| K-Nearest Neighbors | 98.62%   | Sensitive to feature scaling                   |
+| MLP                 | 98.62%   | Good accuracy, PCA improves speed              |
 
 - PCA and correlation analysis improve computation without compromising accuracy.
 - Some attack types (e.g., Smurf) show lower F1 due to class imbalance.
