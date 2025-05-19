@@ -168,6 +168,3 @@ Anaya Dandekar
 MS Computer Science  
 San Jose State University  
 
-## License
-
-This project is licensed under the MIT License.
