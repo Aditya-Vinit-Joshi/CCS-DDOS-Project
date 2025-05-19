@@ -1,142 +1,173 @@
-#  DDoS Attack Detection and Classification using Machine & Deep Learning
 
-This project focuses on the accurate **detection and classification of Distributed Denial of Service (DDoS) attacks** using supervised learning algorithms. We employ classical machine learning models (Random Forest, XGBoost, K-Nearest Neighbors) and a Multi-Layer Perceptron (MLP) neural network to handle a multi-class classification problem. The dataset used simulates real-world DDoS scenarios and is sourced from Kaggle.
+# DDoS Attack Detection and Classification using Machine Learning
 
->  Project Files:
-> - `CCS_Project_Part1.ipynb`: Data exploration, preprocessing, and traditional ML model training.
-> - `CCS_Project_Part2.ipynb`: PCA optimization and MLP implementation.
-> - `AdityaJoshi-AnayaDandekar-CS258-Project.pptx`: Final project presentation.
+This repository contains the code and methodology for detecting and classifying Distributed Denial of Service (DDoS) attacks using traditional machine learning techniques. The code is implemented across two Jupyter notebooks and leverages dimensionality reduction techniques like PCA, alongside classifiers like Random Forest, XGBoost, and K-Nearest Neighbors.
 
----
+## Repository Structure
 
-##  Table of Contents
+```
+.
+├── CCS_Project_Part1.ipynb        # Initial data loading, cleaning, ML training
+├── CCS_Project_Part2.ipynb        # Correlation, PCA, PCA-based ML retraining
+├── README.md                      # Full project documentation
+```
 
-- [Introduction](#introduction)
-- [Motivation & Literature Survey](#motivation--literature-survey)
-- [Dataset](#dataset)
-- [Methodology](#methodology)
-- [Models Implemented](#models-implemented)
-- [Evaluation Metrics](#evaluation-metrics)
-- [Results](#results)
-- [Conclusion & Future Work](#conclusion--future-work)
-- [Setup & Installation](#setup--installation)
-- [References](#references)
+## Objective
 
----
+The goal of this project is to:
+- Detect and classify multiple types of DDoS attacks from network traffic logs
+- Apply machine learning models and analyze their performance
+- Improve computational efficiency and model accuracy using correlation analysis and PCA
 
-##  Introduction
+## Dataset
 
-DDoS attacks aim to overwhelm networks or services by flooding them with traffic, causing denial of service to legitimate users. This project applies machine learning to detect and classify different types of DDoS attacks efficiently and accurately.
+- **Source**: [Kaggle - DDoS Attack Network Logs by Jacob van Steyn](https://www.kaggle.com/datasets/jacobvs/ddos-attack-network-logs)
+- **Format**: ARFF (converted to DataFrame)
+- **Size**: Approximately 2.1 million records with 28 features
+- **Target Classes**: UDP-FLOOD, SMURF, SIDDOS, HTTP-FLOOD, and others
 
----
+## Notebooks Overview
 
-##  Motivation & Literature Survey
+### 1. `CCS_Project_Part1.ipynb`
 
-The base methodology stems from studies like:
+This notebook includes:
 
-- **SPIDER**: PCA + RNN-based robust detection system
-- **Autoencoders**: Unsupervised anomaly detection
-- **CNN-BiLSTM**: Temporal pattern detection
-- **Hybrid Deep Models**: GANs + ResNet + AlexNet for high-accuracy multi-class detection
+- Dataset download using `kagglehub`
+- ARFF file loading with `scipy.io.arff`
+- DataFrame creation
+- Feature cleanup: dropping timestamps and identifiers
+- Byte-string decoding to readable strings
+- Label encoding for categorical features
+- Data exploration with correlation heatmaps and distribution plots
+- Model training:
+  - RandomForestClassifier
+  - XGBClassifier
+  - KNeighborsClassifier
+- Evaluation: Accuracy, Confusion Matrix, Classification Report, F1 Score
 
-Challenges addressed:
-- Detecting AND classifying attack types
-- Handling high-dimensional data
-- Improving accuracy through feature selection (PCA, correlation analysis)
+### 2. `CCS_Project_Part2.ipynb`
 
----
+This notebook extends the first by:
 
-##  Dataset
+- Performing correlation analysis to remove redundant features
+- Applying PCA for dimensionality reduction
+- Visualizing explained variance ratio to select components
+- Retraining models on reduced data:
+  - XGBClassifier with PCA
+  - KNN with PCA
+- Comparing model accuracy and computational efficiency
 
-- **Source**: [Kaggle – DDoS Attack Network Logs by Jacob van Steyn](https://www.kaggle.com/datasets/jacobvs/ddos-attack-network-logs)
-- **Format**: ARFF → Converted to CSV
-- **Size**: ~2.1 million rows, 28 features
-- **Classes**: Normal, UDP-Flood, Smurf, SIDDOS, HTTP-Flood
+## Project Flow
 
-### Key Features
+1. **Data Loading**
+```python
+from scipy.io import arff
+data, meta = arff.loadarff(path + '/final-dataset.arff')
+df = pd.DataFrame(data)
+```
 
-- Traffic metadata: source/destination IPs, port info, flow timestamps
-- Labels indicate attack class
-- Mimics real-world Intrusion Detection System (IDS) logs
+2. **Data Preprocessing**
+```python
+df['PKT_TYPE'] = df['PKT_TYPE'].str.decode('utf-8')
+df['PKT_CLASS'] = df['PKT_CLASS'].str.decode('utf-8')
+df['PKT_TYPE'] = LabelEncoder().fit_transform(df['PKT_TYPE'])
+df['PKT_CLASS'] = LabelEncoder().fit_transform(df['PKT_CLASS'])
+```
 
----
+3. **Exploratory Data Analysis**
+```python
+sns.heatmap(df.corr(), annot=False, cmap='coolwarm')
+```
 
-###  Methodology
+4. **Correlation and PCA**
+```python
+from sklearn.decomposition import PCA
+pca = PCA(n_components=10)
+reduced = pca.fit_transform(scaled_data)
+```
 
-###  Data Preprocessing
+5. **Model Training**
+```python
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+```
 
-- **Dropped Columns**: Identifiers, timestamps (e.g., `FID`, `SEQ_NUMBER`)
-- **String Decoding**: Converted byte strings to readable strings
-- **Label Encoding**: Applied to `PKT_TYPE`, `PKT_CLASS`
-- **Scaling**: StandardScaler / MinMaxScaler
-- **Dimensionality Reduction**:
-  - **Correlation matrix** for redundant feature removal
-  - **Principal Component Analysis (PCA)** to reduce computational complexity
+6. **Evaluation**
+```python
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+```
 
----
+## Installation and Setup
 
-##  Models Implemented
-
-| Algorithm            | Notebook Part | Optimization Techniques    |
-|---------------------|---------------|-----------------------------|
-| Random Forest        | Part 1        | Basic, no PCA              |
-| XGBoost              | Part 1 & 2    | PCA, Correlation           |
-| K-Nearest Neighbors  | Part 1        | Scaled & Cleaned Data      |
-| Multi-Layer Perceptron (MLP) | Part 2 | With and without PCA       |
-
-###  Feature Engineering
-
-- Dimensionality reduced using PCA
-- Feature correlation considered to drop redundant columns
-- One-hot encoding/label encoding applied where needed
-
----
-
-##  Evaluation Metrics
-
-- **Accuracy Score**
-- **F1 Score** (macro/micro/weighted)
-- **Confusion Matrix**
-- **Classification Report**
-- **Execution Time**
-
----
-
-## 🏁 Results
-
-| Model                | Accuracy (%) | Notes                              |
-|---------------------|--------------|-------------------------------------|
-| Random Forest        | ~95.2%       | Fast, good balance                 |
-| XGBoost              | ~96.4%       | Best performer with PCA            |
-| KNN                  | ~92.7%       | Sensitive to scaling               |
-| MLP (neural network) | ~94.1%       | Performs well after PCA            |
-
->  **Observations**:
-> - Smurf attack was hard to classify due to class imbalance
-> - PCA improved execution time significantly without much loss in accuracy
-
----
-
-##  Conclusion & Future Work
-
-### Accomplishments
-- Built an end-to-end ML pipeline for multi-class DDoS attack classification
-- Applied PCA and correlation to reduce data noise
-- Compared traditional ML and neural models
-
-###  Future Scope
-- Apply **SMOTE** to balance class distribution
-- Perform **hyperparameter tuning**
-- Use **deep CNN/LSTM** models for sequential data
-- Integrate with **real-time traffic sniffers** (e.g., Scapy)
-- Explore **Explainable AI** for security auditability
-
----
-
-##  Setup & Installation
-
-### 1. Clone the Repository
+### 1. Clone this Repository
 
 ```bash
 git clone https://github.com/your-username/ddos-attack-detection.git
 cd ddos-attack-detection
+```
+
+### 2. Create Virtual Environment (Optional)
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+### 3. Install Requirements
+
+```bash
+pip install pandas numpy matplotlib seaborn scikit-learn xgboost kagglehub scipy tensorflow
+```
+
+## Dependencies
+
+This project requires the following Python packages:
+
+- pandas
+- numpy
+- matplotlib
+- seaborn
+- scikit-learn
+- xgboost
+- kagglehub
+- scipy
+- tensorflow (imported but not used)
+- os
+- time
+
+You can install them via pip:
+
+```bash
+pip install pandas numpy matplotlib seaborn scikit-learn xgboost kagglehub scipy tensorflow
+```
+
+## Results Summary
+
+| Model                | Accuracy | Notes                                  |
+|---------------------|----------|----------------------------------------|
+| Random Forest        | ~95%     | Performs well without dimensionality reduction |
+| XGBoost              | ~96%     | Highest accuracy, PCA improves speed   |
+| K-Nearest Neighbors  | ~92%     | Sensitive to feature scaling           |
+
+- PCA and correlation analysis improve computation without compromising accuracy.
+- Some attack types (e.g., Smurf) show lower F1 due to class imbalance.
+
+## Future Work
+
+- Apply SMOTE to mitigate class imbalance
+- Hyperparameter tuning via `GridSearchCV`
+- Explore neural networks like MLP, CNN, or LSTM
+- Real-time traffic monitoring integration with packet capture tools
+- Use explainable AI (e.g., SHAP, LIME) for model transparency
+
+## Authors
+
+Aditya Joshi  
+Anaya Dandekar  
+MS Computer Science  
+San Jose State University  
+
+## License
+
+This project is licensed under the MIT License.
